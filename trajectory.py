@@ -2,7 +2,7 @@ import math
 import sys
 ##import matplotlib.pyplot as plt
 ##from mpl_toolkits.mploangle3d.axes3d import Axes3D
-t=0
+
 
 
 
@@ -54,7 +54,7 @@ while  True :
         z_list = []
         while n < 2 :
             input_posi = str(input('input position: '))
-            if input_posi == 'A_up':11
+            if input_posi == 'A_up':
                j = A_up
                
             elif input_posi =='A_down':
