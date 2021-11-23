@@ -63,7 +63,7 @@ class coordinate:
 
 
 
-R=[coordinate( (link2+link3)*math.sin(25*math.pi/180.0),(link2+link3)*math.cos(25*math.pi/180.0) , link0+link1) , coordinate(0.0 , (link2+link3) , (link0+link1))]
+R=[coordinate( (link2+link3)*math.sin(24*math.pi/180.0),(link2+link3)*math.cos(24*math.pi/180.0) , link0+link1) , coordinate(0.0 , (link2+link3) , (link0+link1))]
 ##reset,need to set on actual robot arm
 now_position = coordinate((link2+link3)*math.sin(19*math.pi/180.0) ,(link2+link3)*math.cos(19*math.pi/180.0) , link0+link1)
 
