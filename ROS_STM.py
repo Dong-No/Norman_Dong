@@ -15,8 +15,8 @@ import serial
 import threading
 import struct
 
-COM_Name1P = '/dev/ttyACM1'##STM attatched to motor1 and Pressure sensor
-COM_Name23 = '/dev/ttyACM4'##STM attatched to motor2 and motor3
+COM_Name1P = '/dev/ttyACM2'##STM attatched to motor1 and Pressure sensor
+COM_Name23 = '/dev/ttyACM0'##STM attatched to motor2 and motor3
 Stop_flag = 1
 BAUTRATE = 230400#9600
 # dt = 0.005#0.005
@@ -65,14 +65,16 @@ class coordinate:
 
 R=[coordinate( (link2+link3)*math.sin(24*math.pi/180.0),(link2+link3)*math.cos(24*math.pi/180.0) , link0+link1) , coordinate(0.0 , (link2+link3) , (link0+link1))]
 ##reset,need to set on actual robot arm
-now_position = coordinate((link2+link3)*math.sin(19*math.pi/180.0) ,(link2+link3)*math.cos(19*math.pi/180.0) , link0+link1)
+
+# now_position = coordinate((link2+link3)*math.sin(19*math.pi/180.0) ,(link2+link3)*math.cos(19*math.pi/180.0) , link0+link1)
+now_position = coordinate(0.0 , (link2+link3) , (link0+link1))
 
 A = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , up_down_dis)]
 B = [coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board, up_down_dis)]
 C = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board, above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board, up_down_dis)]
-D = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh , up_down_dis)]
-E = [coordinate(0.0 , dis_ori_plate + half_plate_lengh , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh , up_down_dis)]
-F = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh , above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh , up_down_dis)]
+D = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh+5 , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh+5 , up_down_dis)]
+E = [coordinate(0.0 , dis_ori_plate + half_plate_lengh+5 , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh+5 , up_down_dis)]
+F = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh+5 , above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh+5 , up_down_dis)]
 G = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , up_down_dis)]
 H = [coordinate(0.0 , dis_ori_plate + half_plate_lengh - dis_num_board , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh - dis_num_board , up_down_dis)]
 I = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , up_down_dis)]
@@ -249,8 +251,8 @@ if __name__ == '__main__' :
             while not rospy.is_shutdown():
                 # Cmd_pub23(STM)
 
-                Y = input("繼續=1，否=0:\n")
-                if Y == 1 :             
+                # Y = input("繼續=1，否=0:\n")
+                # if Y == 1 :             
                     
                     read_in = ['a','a']
                     position = [coordinate(0,0,0),coordinate(0,0,0),coordinate(0,0,0),coordinate(0,0,0)]
@@ -379,7 +381,7 @@ if __name__ == '__main__' :
                         yi = yf
                         zi = zf
                         z_direction_move(xi,yi,zi)
-                        time.sleep(time_interval)
+                        time.sleep(time_interval*3)
 
                     else :
                         if  now_position.z == above_dis :##== position[0].z
@@ -401,6 +403,7 @@ if __name__ == '__main__' :
                             xi = xf ## let xi totally match xf
                             yi = yf
                             move_above_plate(xi,yi)
+                            time.sleep(time_interval*3)
 
                         elif now_position.z == (link0+link1) :##== position[0].z
                             x_difference = (position[0].x - now_position.x)
@@ -420,6 +423,7 @@ if __name__ == '__main__' :
                             xi = xf ## let xi totally match xf
                             yi = yf
                             move_on_R(xi,yi)
+                            time.sleep(time_interval*3)
             #######################################################
 
                     j = 0
@@ -448,7 +452,7 @@ if __name__ == '__main__' :
                             xi = xf ## let xi totally match xf
                             yi = yf
                             move_on_surface(xi,yi)
-                            time.sleep(time_interval)
+                            time.sleep(time_interval*3)
                                
                         elif zi != zf :
                             i=1
@@ -465,7 +469,7 @@ if __name__ == '__main__' :
                             yi = yf
                             zi = zf
                             z_direction_move(xi,yi,zi)
-                            time.sleep(time_interval)
+                            time.sleep(time_interval*3)
 
                         elif zi == zf == R[0].z :
                             i=1
@@ -481,7 +485,7 @@ if __name__ == '__main__' :
                             yi = yf
                         
                             move_on_R(xi,yi)
-                            time.sleep(time_interval)
+                            time.sleep(time_interval*3)
                             print 'go to reset'
                         else :
                             sys.exit("error")
@@ -496,10 +500,10 @@ if __name__ == '__main__' :
                     print 'the program has run ',process_time,' times'
                     
                 
-                else:
-                    sys.exit("see you")
+                # else:
+                #     sys.exit("see you")
 
-                rate.sleep()
+            rate.sleep()
         
             Stop_flag = 0
             STM_1P.close()
