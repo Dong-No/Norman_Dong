@@ -34,15 +34,15 @@ link1 = 82.0
 link2 = 131.0
 link3 = 186.0#186 #take the center of ball as end of axis3
 
-###need ro adjust in real arm
+###need to adjust in real arm
 up_down_dis = 20.0 #20 #ball surface touch the plate
 above_dis = 40.0 ##distance between ball center and ground
-###need ro adjust in real arm
+###need to adjust in real arm
 
 half_plate_lengh = 151.0/2.0
 
 interval_i = 50 ##this is used for for_loop i,must be in type int
-interval = 50.0 ##this is used for float division,must be in type float
+interval = 50.0 ##this is used for float division,must be in type float(python double)
 time_interval = 0.01  #sec per interval
 
 
@@ -66,8 +66,8 @@ class coordinate:
 R=[coordinate( (link2+link3)*math.sin(24*math.pi/180.0),(link2+link3)*math.cos(24*math.pi/180.0) , link0+link1) , coordinate(0.0 , (link2+link3) , (link0+link1))]
 ##reset,need to set on actual robot arm
 
-# now_position = coordinate((link2+link3)*math.sin(19*math.pi/180.0) ,(link2+link3)*math.cos(19*math.pi/180.0) , link0+link1)
-now_position = coordinate(0.0 , (link2+link3) , (link0+link1))
+now_position = coordinate((link2+link3)*math.sin(27*math.pi/180.0) ,(link2+link3)*math.cos(27*math.pi/180.0) , link0+link1)
+# now_position = coordinate(0.0 , (link2+link3) , (link0+link1))
 
 A = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , up_down_dis)]
 B = [coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board, up_down_dis)]
@@ -361,7 +361,7 @@ if __name__ == '__main__' :
                     yf = position[0].y
                     zf = position[0].z
                     print 'debug'
-                    if  now_position.z != position[0].z :##start from R point
+                    if  now_position.z != position[0].z :##start from R point 
                         x_difference = (position[0].x - now_position.x)
                         y_difference = (position[0].y - now_position.y)
                         z_difference = (position[0].z - now_position.z)
@@ -411,11 +411,11 @@ if __name__ == '__main__' :
                             # z_difference = (position[0].z - now_position.z)
 
                             i=1
-                            for i in range(interval_i)  :
+                            for i in range(interval_i*2)  :##11/28更改
                                 move_on_R(xi,yi)                                           
                                 
-                                xi+= x_difference / interval #兩點之間切成100格
-                                yi+= y_difference / interval
+                                xi+= x_difference / (interval*2) ###11/28更改
+                                yi+= y_difference / (interval*2)##11/28更改
                                 # print(xi,yi,zi)
                                 i+=1
                                 time.sleep(time_interval)
@@ -473,11 +473,11 @@ if __name__ == '__main__' :
 
                         elif zi == zf == R[0].z :
                             i=1
-                            for i in range(interval_i)  :
+                            for i in range(interval_i*2)  :##11/28
                                 move_on_R(xi,yi)
                                 
-                                xi+= x_difference / interval #兩點之間切成100格
-                                yi+= y_difference / interval
+                                xi+= x_difference / (interval*2) ##11/28
+                                yi+= y_difference / (interval*2)##11/28
                                 # print(xi,yi)
                                 i+=1
                                 time.sleep(time_interval)
