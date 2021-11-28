@@ -15,8 +15,8 @@ import serial
 import threading
 import struct
 
-COM_Name1P = '/dev/ttyACM2'##STM attatched to motor1 and Pressure sensor
-COM_Name23 = '/dev/ttyACM0'##STM attatched to motor2 and motor3
+COM_Name1P = '/dev/ttyACM0'##STM attatched to motor1 and Pressure sensor
+COM_Name23 = '/dev/ttyACM1'##STM attatched to motor2 and motor3
 Stop_flag = 1
 BAUTRATE = 230400#9600
 # dt = 0.005#0.005
@@ -34,15 +34,15 @@ link1 = 82.0
 link2 = 131.0
 link3 = 186.0#186 #take the center of ball as end of axis3
 
-###need to adjust in real arm
+###need ro adjust in real arm
 up_down_dis = 20.0 #20 #ball surface touch the plate
 above_dis = 40.0 ##distance between ball center and ground
-###need to adjust in real arm
+###need ro adjust in real arm
 
 half_plate_lengh = 151.0/2.0
 
 interval_i = 50 ##this is used for for_loop i,must be in type int
-interval = 50.0 ##this is used for float division,must be in type float(python double)
+interval = 50.0 ##this is used for float division,must be in type float
 time_interval = 0.01  #sec per interval
 
 
@@ -63,11 +63,12 @@ class coordinate:
 
 
 
-R=[coordinate( (link2+link3)*math.sin(24*math.pi/180.0),(link2+link3)*math.cos(24*math.pi/180.0) , link0+link1) , coordinate(0.0 , (link2+link3) , (link0+link1))]
+R=[coordinate(0.0 , (link2+link3) , (link0+link1)) , coordinate( (link2+link3)*math.sin(28*math.pi/180.0),(link2+link3)*math.cos(28*math.pi/180.0) , link0+link1)]
 ##reset,need to set on actual robot arm
 
-now_position = coordinate((link2+link3)*math.sin(27*math.pi/180.0) ,(link2+link3)*math.cos(27*math.pi/180.0) , link0+link1)
+# now_position = coordinate((link2+link3)*math.sin(19*math.pi/180.0) ,(link2+link3)*math.cos(19*math.pi/180.0) , link0+link1)
 # now_position = coordinate(0.0 , (link2+link3) , (link0+link1))
+now_position = R[1]
 
 A = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , up_down_dis)]
 B = [coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board, up_down_dis)]
@@ -300,8 +301,8 @@ if __name__ == '__main__' :
                         position[1] = I[1]
 
                     elif read_in[0] == 'R' :
-                        position[0] = R[1]
-                        position[1] = R[0]
+                        position[0] = R[0]
+                        position[1] = R[1]
                         
                     else: 
                         sys.exit("improper input")
@@ -344,7 +345,7 @@ if __name__ == '__main__' :
                         position[3] = I[0]
 
                     elif read_in[1] == 'R' :
-                        position[2] = R[0]
+                        position[2] = R[1]
                         position[3] = R[1]
                         
                     else: 
@@ -361,7 +362,28 @@ if __name__ == '__main__' :
                     yf = position[0].y
                     zf = position[0].z
                     print 'debug'
-                    if  now_position.z != position[0].z :##start from R point 
+                    if  now_position.z != position[0].z :##R[1] to A[0] or A[0] to R[1]
+                        ##############11/28###############
+                        if   now_position.x == R[1].x:
+                            x_difference = (R[0].x - R[1].x)
+                            y_difference = (R[0].y - R[1].y)
+                            #z_difference = (R[0].z - R[1].z)
+                            i=1
+                            for i in range(interval_i)  :
+                                move_on_R(xi,yi)                                           
+                                
+                                xi+= x_difference / (interval) #兩點之間切成100格
+                                yi+= y_difference / (interval)
+                                # print(xi,yi,zi)
+                                i+=1
+                                time.sleep(time_interval)
+
+                            xi = R[0].x ## let xi totally match xf
+                            yi = R[0].y
+                            move_on_R(xi,yi)
+                            time.sleep(time_interval*3)
+                            now_position = R[0]
+                        ##############11/28###############
                         x_difference = (position[0].x - now_position.x)
                         y_difference = (position[0].y - now_position.y)
                         z_difference = (position[0].z - now_position.z)
@@ -370,7 +392,7 @@ if __name__ == '__main__' :
                         for i in range(interval_i*2)  :
                             z_direction_move(xi,yi,zi)                                           
                             
-                            xi+= x_difference / (interval*2) #R point is far away from normal work area
+                            xi+= x_difference / (interval*2) #R[0] point is far away from normal work area
                             yi+= y_difference / (interval*2) #so we set double interval numbers between R and A~I
                             zi+= z_difference / (interval*2) #to avoid motor_input_volt from saturation
                             # print(xi,yi,zi)
@@ -411,11 +433,11 @@ if __name__ == '__main__' :
                             # z_difference = (position[0].z - now_position.z)
 
                             i=1
-                            for i in range(interval_i*2)  :##11/28更改
+                            for i in range(interval_i)  :
                                 move_on_R(xi,yi)                                           
                                 
-                                xi+= x_difference / (interval*2) ###11/28更改
-                                yi+= y_difference / (interval*2)##11/28更改
+                                xi+= x_difference / (interval) #兩點之間切成100格
+                                yi+= y_difference / (interval)
                                 # print(xi,yi,zi)
                                 i+=1
                                 time.sleep(time_interval)
@@ -473,11 +495,11 @@ if __name__ == '__main__' :
 
                         elif zi == zf == R[0].z :
                             i=1
-                            for i in range(interval_i*2)  :##11/28
+                            for i in range(interval_i*2)  :
                                 move_on_R(xi,yi)
                                 
-                                xi+= x_difference / (interval*2) ##11/28
-                                yi+= y_difference / (interval*2)##11/28
+                                xi+= x_difference / (interval*2) #兩點之間切成100格
+                                yi+= y_difference / (interval*2)
                                 # print(xi,yi)
                                 i+=1
                                 time.sleep(time_interval)
@@ -517,7 +539,7 @@ if __name__ == '__main__' :
     
 
 
-##2021.11.20.17:54
+##2021.11.28.15:42
 ##reset: insert R twice
 ##axis 3 controller can be improved
 ##
