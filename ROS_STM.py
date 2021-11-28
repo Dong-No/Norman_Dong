@@ -62,13 +62,11 @@ class coordinate:
 ##Note that coordinate is for ball center.
 
 
-
+##11/28
 R=[coordinate(0.0 , (link2+link3) , (link0+link1)) , coordinate( (link2+link3)*math.sin(28*math.pi/180.0),(link2+link3)*math.cos(28*math.pi/180.0) , link0+link1)]
-##reset,need to set on actual robot arm
 
-# now_position = coordinate((link2+link3)*math.sin(19*math.pi/180.0) ,(link2+link3)*math.cos(19*math.pi/180.0) , link0+link1)
 # now_position = coordinate(0.0 , (link2+link3) , (link0+link1))
-now_position = R[1]
+now_position = R[1]##11/28
 
 A = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , up_down_dis)]
 B = [coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board, up_down_dis)]
@@ -345,8 +343,8 @@ if __name__ == '__main__' :
                         position[3] = I[0]
 
                     elif read_in[1] == 'R' :
-                        position[2] = R[1]
-                        position[3] = R[1]
+                        position[2] = R[1]##11/28
+                        position[3] = R[1]##11/28
                         
                     else: 
                         sys.exit("improper input")
@@ -539,7 +537,7 @@ if __name__ == '__main__' :
     
 
 
-##2021.11.28.15:42
+##2021.11.20.17:54
 ##reset: insert R twice
 ##axis 3 controller can be improved
 ##
