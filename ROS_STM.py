@@ -11,6 +11,8 @@ import time
 import rospy
 from rospy import timer 
 from std_msgs.msg import Float64 , String
+from cam.msg import Stop
+from algo.msg import stringArray
 import serial
 import threading
 import struct
@@ -19,7 +21,7 @@ COM_Name1P = '/dev/ttyACM0'##STM attatched to motor1 and Pressure sensor
 COM_Name23 = '/dev/ttyACM1'##STM attatched to motor2 and motor3
 Stop_flag = 1
 BAUTRATE = 230400#9600
-# dt = 0.005#0.005
+dt = 0.005#0.005
 
 Cmd_1 = 0.0
 Cmd_2 = 0.0
@@ -42,7 +44,7 @@ above_dis = 40.0 ##distance between ball center and ground
 half_plate_lengh = 151.0/2.0
 
 interval_i = 50 ##this is used for for_loop i,must be in type int
-interval = 50.0 ##this is used for float division,must be in type float
+interval =50.0 ##this is used for float division,must be in type float
 time_interval = 0.01  #sec per interval
 
 
@@ -56,29 +58,30 @@ class coordinate:
         self.y=y
         self.z=z
 
-# now_position = coordinate(0.0 , dis_ori_plate + half_plate_lengh , up_down_dis)
-# now_position = coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board, up_down_dis)##assign initial position
-
-##Note that coordinate is for ball center.
-
-
 ##11/28
 R=[coordinate(0.0 , (link2+link3) , (link0+link1)) , coordinate( (link2+link3)*math.sin(28*math.pi/180.0),(link2+link3)*math.cos(28*math.pi/180.0) , link0+link1)]
 
 # now_position = coordinate(0.0 , (link2+link3) , (link0+link1))
 now_position = R[1]##11/28
 
-A = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , up_down_dis)]
-B = [coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board, up_down_dis)]
-C = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board, above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board, up_down_dis)]
-D = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh+5 , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh+5 , up_down_dis)]
-E = [coordinate(0.0 , dis_ori_plate + half_plate_lengh+5 , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh+5 , up_down_dis)]
-F = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh+5 , above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh+5 , up_down_dis)]
-G = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , up_down_dis)]
-H = [coordinate(0.0 , dis_ori_plate + half_plate_lengh - dis_num_board , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh - dis_num_board , up_down_dis)]
-I = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , up_down_dis)]
+A = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , up_down_dis)]
+B = [coordinate(0.0 , dis_ori_plate + half_plate_lengh - dis_num_board , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh - dis_num_board , up_down_dis)]
+C = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board , up_down_dis)]
+D = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh , above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh , up_down_dis)]
+E = [coordinate(0.0 , dis_ori_plate + half_plate_lengh , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh , up_down_dis)]
+F = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh , up_down_dis)]
+G = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board, above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board, up_down_dis)]
+H = [coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh + dis_num_board, up_down_dis)]
+I = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh + dis_num_board , up_down_dis)]
 
+cpl = 8#compliment of ABC DEF move
 
+A_sub = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh-cpl - dis_num_board , above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board-cpl , up_down_dis)]
+B_sub = [coordinate(0.0 , dis_ori_plate + half_plate_lengh - dis_num_board-cpl , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh - dis_num_board-cpl , up_down_dis)]
+C_sub = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board-cpl , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh - dis_num_board-cpl , up_down_dis)]
+D_sub = [coordinate(dis_num_board , dis_ori_plate + half_plate_lengh-cpl , above_dis) , coordinate(dis_num_board , dis_ori_plate + half_plate_lengh-cpl , up_down_dis)]
+E_sub = [coordinate(0.0 , dis_ori_plate + half_plate_lengh-cpl , above_dis) , coordinate(0.0 , dis_ori_plate + half_plate_lengh-cpl , up_down_dis)]
+F_sub = [coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh-cpl , above_dis) , coordinate(-dis_num_board , dis_ori_plate + half_plate_lengh-cpl , up_down_dis)]
 
 def CmdtoByte(NUM):
     NUM_I = int(NUM*1000)
@@ -119,7 +122,7 @@ def Read_data(Serial):
             
 	    print data
         except Exception as e:
-            print e, data           
+            print e           
     return
 
 def move_on_surface(x,y): #地面上平移
@@ -148,6 +151,7 @@ def move_on_surface(x,y): #地面上平移
     
     Cmd_pub23(STM_23)
     Cmd_pub1P(STM_1P)
+    
 
 def move_above_plate(x,y): #空中平移
     L = math.sqrt(x**2+y**2)
@@ -184,11 +188,11 @@ def z_direction_move(x,y,z): #垂直地面上下移動
     L3 = link3
     L_diagonal = math.sqrt(L1**2+L**2)
     cosR = (L_diagonal**2-L2**2-L3**2)/(-2*L2*L3)
-    R = math.acos(cosR)##
+    R = math.acos(cosR)
     angle3 = -(math.pi - R)
     a = math.acos(L1/L_diagonal)
-    b = math.asin(L3/L_diagonal*math.sin(R))##law of sines
-    angle2 = -(math.pi - a - b) + math.pi/2 ## +math.pi/2 is and offset in real arm , set arm start point
+    b = math.asin(L3/L_diagonal*math.sin(R))
+    angle2 = -(math.pi - a - b) + math.pi/2
     angle1 = -math.asin(x/L)
 
     angle3 = angle3 + angle2*0.7##belt transmition of real arm
@@ -204,7 +208,6 @@ def z_direction_move(x,y,z): #垂直地面上下移動
     Cmd_pub23(STM_23)
     Cmd_pub1P(STM_1P)
 
-##########################################
 def move_on_R(x,y): #地面上平移
     L = math.sqrt(x**2+y**2)
     L1 = 0.0
@@ -228,39 +231,62 @@ def move_on_R(x,y): #地面上平移
     Cmd_pub1P(STM_1P)
 
 
+class armNode():
+    def __init__(self):
+        self.node = None
+        self.sub = None
+        self.sub_stop = None
+        self.stop_flag = False
+        self.time_stamp = None
+        self.now_executing = None
+        
+    def start(self):
+        self.node = rospy.init_node('Com_STM32_INTERFACE')
+        self.sub = rospy.Subscriber('algo_result', stringArray, self.__listenerCallback)
+        self.sub_stop = rospy.Subscriber('stop_flag', Stop, self.__stopFlagCallback)
+
+    def __listenerCallback(self, recieved_data):
+        self.now_executing = recieved_data.data
+        if any(self.now_executing):
+            self.now_executing.append('R R')
+        self.time_stamp = recieved_data.time_stamp
+
+    def __stopFlagCallback(self, recieved_data):
+        self.stop_flag = recieved_data.flag
+
+##########################################
+
+
 process_time = 0##how many times did the program run
     
     
 if __name__ == '__main__' :
- 
-    rospy.init_node('Com_STM32_INTERFACE',anonymous= True)
-    rate=rospy.Rate(100) # 100hz
+        
+    node = armNode()
+    node.start()
+    rate = rospy.Rate(50)
         
     try:
-        
         STM_1P = Connect_STM(COM_Name1P, BAUTRATE)
         STM_23 = Connect_STM(COM_Name23, BAUTRATE)
         
         if  (STM_1P != 'Error' and STM_23 != 'Error'):
-            
             t_1P = threading.Thread(target=Read_data, args=(STM_1P,))
             t_1P.start()
             t_23 = threading.Thread(target=Read_data, args=(STM_23,))
             t_23.start()
             while not rospy.is_shutdown():
-                # Cmd_pub23(STM)
-
-                # Y = input("繼續=1，否=0:\n")
-                # if Y == 1 :             
-                    
-                    read_in = ['a','a']
-                    position = [coordinate(0,0,0),coordinate(0,0,0),coordinate(0,0,0),coordinate(0,0,0)]
-                    ##meaningless,just initialize,tell the computer there are 2 and 4 index
-
-                    n=0
-                    while n < 2 :
-                        read_in[n] = raw_input("position A~I: ")
-                        n+=1
+                # Cmd_pub23(STM)           
+                read_in = ['a','a']
+                position = [coordinate(0,0,0),coordinate(0,0,0),coordinate(0,0,0),coordinate(0,0,0)]
+                ##meaningless,just initialize,tell the computer there are 2 and 4 index
+                if node.now_executing == None:
+                   continue
+                #print(node.now_executing)
+                for command in node.now_executing:
+                    #if node.stop_flag:
+                    #    command = 'R R'
+                    read_in = command.split(' ')
 
                     if read_in[0] == 'A' :
                         position[0] = A[0]
@@ -343,15 +369,39 @@ if __name__ == '__main__' :
                         position[3] = I[0]
 
                     elif read_in[1] == 'R' :
-                        position[2] = R[1]##11/28
-                        position[3] = R[1]##11/28
+                        position[2] = R[1]
+                        position[3] = R[1]
                         
                     else: 
                         sys.exit("improper input")
 
+                    if read_in[0] == 'A' and read_in[1] == 'B':
+                        position[2] = B_sub[1]
+                        position[3] = B[0]
+                    if read_in[0] == 'B' and read_in[1] == 'A':
+                        position[2] = A_sub[1]
+                        position[3] = A[0]
+                    if read_in[0] == 'A' and read_in[1] == 'C':
+                        position[2] = C_sub[1]
+                        position[3] = C[0]
+                    if read_in[0] == 'C' and read_in[1] == 'A':
+                        position[2] = A_sub[1]
+                        position[3] = A[0]
+                    if read_in[0] == 'F' and read_in[1] == 'E':
+                        position[2] = E_sub[1]
+                        position[3] = E[0]
+                    if read_in[0] == 'E' and read_in[1] == 'F':
+                        position[2] = F_sub[1]
+                        position[3] = F[0]
+                    if read_in[0] == 'D' and read_in[1] == 'E':
+                        position[2] = E_sub[1]
+                        position[3] = E[0]
+                    if read_in[0] == 'E' and read_in[1] == 'D':
+                        position[2] = D_sub[1]
+                        position[3] = D[0]
+
 
                         #print(x_difference,y_difference,z_difference) 
-
                     
                     xi = now_position.x
                     yi = now_position.y
@@ -359,20 +409,20 @@ if __name__ == '__main__' :
                     xf = position[0].x
                     yf = position[0].y
                     zf = position[0].z
-                    print 'debug'
-                    if  now_position.z != position[0].z :##R[1] to A[0] or A[0] to R[1]
-                        ##############11/28###############
+
+                    if  now_position.z != position[0].z: #start from R point
+                        #"""
                         if   now_position.x == R[1].x:
                             x_difference = (R[0].x - R[1].x)
                             y_difference = (R[0].y - R[1].y)
                             #z_difference = (R[0].z - R[1].z)
-                            i=1
-                            for i in range(interval_i)  :
+                            print(interval_i)
+                            for i in range(1,interval_i)  :
+                                print(i)
                                 move_on_R(xi,yi)                                           
                                 
                                 xi+= x_difference / (interval) #兩點之間切成100格
                                 yi+= y_difference / (interval)
-                                # print(xi,yi,zi)
                                 i+=1
                                 time.sleep(time_interval)
 
@@ -381,7 +431,7 @@ if __name__ == '__main__' :
                             move_on_R(xi,yi)
                             time.sleep(time_interval*3)
                             now_position = R[0]
-                        ##############11/28###############
+                        #"""
                         x_difference = (position[0].x - now_position.x)
                         y_difference = (position[0].y - now_position.y)
                         z_difference = (position[0].z - now_position.z)
@@ -390,7 +440,7 @@ if __name__ == '__main__' :
                         for i in range(interval_i*2)  :
                             z_direction_move(xi,yi,zi)                                           
                             
-                            xi+= x_difference / (interval*2) #R[0] point is far away from normal work area
+                            xi+= x_difference / (interval*2) #R point is far away from normal work area
                             yi+= y_difference / (interval*2) #so we set double interval numbers between R and A~I
                             zi+= z_difference / (interval*2) #to avoid motor_input_volt from saturation
                             # print(xi,yi,zi)
@@ -434,8 +484,8 @@ if __name__ == '__main__' :
                             for i in range(interval_i)  :
                                 move_on_R(xi,yi)                                           
                                 
-                                xi+= x_difference / (interval) #兩點之間切成100格
-                                yi+= y_difference / (interval)
+                                xi+= x_difference / interval #兩點之間切成100格
+                                yi+= y_difference / interval
                                 # print(xi,yi,zi)
                                 i+=1
                                 time.sleep(time_interval)
@@ -459,7 +509,7 @@ if __name__ == '__main__' :
                         z_difference = (position[j+1].z - position[j].z)
 
                         if zi == zf == up_down_dis:##moving on the surface of the plate
-                            i=1
+                            i=0
                             for i in range(interval_i)  :##
                                 move_on_surface(xi,yi)
 
@@ -471,7 +521,7 @@ if __name__ == '__main__' :
 
                             xi = xf ## let xi totally match xf
                             yi = yf
-                            move_on_surface(xi,yi)
+                            move_on_surface(xi,yi)   
                             time.sleep(time_interval*3)
                                
                         elif zi != zf :
@@ -493,11 +543,11 @@ if __name__ == '__main__' :
 
                         elif zi == zf == R[0].z :
                             i=1
-                            for i in range(interval_i*2)  :
+                            for i in range(interval_i)  :
                                 move_on_R(xi,yi)
                                 
-                                xi+= x_difference / (interval*2) #兩點之間切成100格
-                                yi+= y_difference / (interval*2)
+                                xi+= x_difference / interval #兩點之間切成100格
+                                yi+= y_difference / interval
                                 # print(xi,yi)
                                 i+=1
                                 time.sleep(time_interval)
@@ -510,36 +560,30 @@ if __name__ == '__main__' :
                         else :
                             sys.exit("error")
 
-                        # print j 
                         j+=1
-                        
+                    #if command == 'R R':
+                    #    break
                     
                     now_position = position[3]
                     print 'now position:',read_in[1]
                     process_time+=1
                     print 'the program has run ',process_time,' times'
-                    
-                
-                # else:
-                #     sys.exit("see you")
 
-            rate.sleep()
+		#time.sleep(0.1)
         
-            Stop_flag = 0
-            STM_1P.close()
-            STM_23.close()
-            print 'ROS bye!'    
+        Stop_flag = 0
+        STM_1P.close()
+        STM_23.close()   
             
     except: 
-        print('Some error!bye!')
-        sys.exit()
+        print('STM connection failed')
+        Stop_flag = 0
+        STM_1P.close()
+        STM_23.close() 
+        exit()
 
-    
 
-
-##2021.11.20.17:54
-##reset: insert R twice
-##axis 3 controller can be improved
 ##
 
- 
+# 2.reset point issue
+# 3.external interrupt ,instead of insert 0,1 to start stop
